@@ -1,0 +1,2 @@
+"""Alert dashboard tests."""
+

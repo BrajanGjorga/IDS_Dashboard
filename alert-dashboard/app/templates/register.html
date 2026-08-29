@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Create account · Aegis{% endblock %}
+{% block content %}
+<section class="auth-layout">
+    <div class="auth-intro">
+        <span class="auth-emblem" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2 4.5 5.2v5.6c0 4.7 3.2 9 7.5 10.2 4.3-1.2 7.5-5.5 7.5-10.2V5.2L12 2Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>
+        <p class="eyebrow">Protected monitoring</p>
+        <h1>Your infrastructure.<br><span>One clear view.</span></h1>
+        <p>Create a private workspace for your monitored servers and review every detection from one focused console.</p>
+        <ul class="feature-list">
+            <li><span>01</span>Private alerts for every account</li>
+            <li><span>02</span>Dedicated token for each server</li>
+            <li><span>03</span>Fast triage and acknowledgement</li>
+        </ul>
+    </div>
+    <div class="auth-card">
+        <div class="auth-card-heading">
+            <p class="eyebrow">Get started</p>
+            <h2>Create your account</h2>
+            <p>Set up your secure monitoring workspace.</p>
+        </div>
+        {% if error %}<div class="form-error" role="alert"><strong>Could not create account</strong><span>{{ error }}</span></div>{% endif %}
+        <form class="stacked-form" method="post" action="/register">
+            <label>Username
+                <input type="text" name="username" value="{{ username }}" minlength="3" maxlength="30" pattern="[A-Za-z0-9][A-Za-z0-9_-]{2,29}" autocomplete="username" placeholder="security_admin" required>
+                <small>3–30 characters; letters, numbers, underscores or hyphens.</small>
+            </label>
+            <label>Email address<input type="email" name="email" value="{{ email }}" autocomplete="email" placeholder="you@company.com" required></label>
+            <div class="form-row">
+                <label>Password<input type="password" name="password" minlength="12" autocomplete="new-password" placeholder="12+ characters" required></label>
+                <label>Confirm password<input type="password" name="password_confirm" minlength="12" autocomplete="new-password" placeholder="Repeat password" required></label>
+            </div>
+            <button class="button primary large" type="submit">Create account <span aria-hidden="true">→</span></button>
+        </form>
+        <p class="auth-switch">Already have an account? <a href="/login">Log in</a></p>
+    </div>
+</section>
+{% endblock %}

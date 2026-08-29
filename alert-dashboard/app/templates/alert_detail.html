@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Alert {{ alert.event_id }} · Aegis{% endblock %}
+{% block content %}
+<nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Alerts</a><span>›</span><span>{{ alert.event_id }}</span></nav>
+
+<section class="detail-hero {% if is_malicious(alert) %}danger-hero{% endif %}">
+    <div class="detail-title">
+        <span class="threat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="M12 8v4m0 4h.01"/></svg></span>
+        <div><p class="eyebrow">Alert #{{ alert.id }}</p><h1>{{ alert.prediction or alert.predicted_label or 'Unknown prediction' }}</h1><p class="event-id">{{ alert.event_id }}</p></div>
+    </div>
+    <div class="detail-actions">
+        {% if alert.acknowledged %}<span class="status acknowledged large-status"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>Acknowledged</span>
+        {% else %}<form method="post" action="/alerts/{{ alert.id }}/acknowledge"><button class="button primary" type="submit"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>Mark acknowledged</button></form>{% endif %}
+    </div>
+</section>
+
+<section class="detail-overview">
+    <article><span>Server</span><strong>{{ alert.server_name or '—' }}</strong></article>
+    <article><span>Confidence</span><strong>{% if alert.confidence is not none %}{{ '%.2f'|format(alert.confidence * 100) }}%{% else %}—{% endif %}</strong></article>
+    <article><span>Protocol</span><strong>{{ alert.protocol or '—' }}</strong></article>
+    <article><span>Detected</span><strong>{{ alert.timestamp.strftime('%d %b %Y, %H:%M:%S') }}</strong></article>
+</section>
+
+<div class="detail-grid">
+    <section class="panel detail-panel">
+        <div class="panel-header"><div><p class="eyebrow">Event data</p><h2>Alert metadata</h2></div></div>
+        <dl class="metadata-list">
+            <div><dt>Received at</dt><dd>{{ alert.received_at.isoformat() }}</dd></div>
+            <div><dt>Prediction</dt><dd><span class="badge {% if is_malicious(alert) %}danger{% else %}safe{% endif %}">{{ alert.prediction or '—' }}</span></dd></div>
+            <div><dt>Predicted label</dt><dd>{{ alert.predicted_label or '—' }}</dd></div>
+            <div><dt>Source CSV</dt><dd>{{ alert.source_csv or '—' }}</dd></div>
+            <div><dt>Model version</dt><dd>{{ alert.model_version or '—' }}</dd></div>
+            <div><dt>Acknowledged at</dt><dd>{{ alert.acknowledged_at.isoformat() if alert.acknowledged_at else '—' }}</dd></div>
+        </dl>
+    </section>
+
+    <section class="panel detail-panel">
+        <div class="panel-header"><div><p class="eyebrow">Traffic path</p><h2>Network information</h2></div></div>
+        <div class="network-route">
+            <div><span>Source</span><strong>{{ alert.source_ip or '—' }}</strong><small>Port {{ alert.source_port if alert.source_port is not none else '—' }}</small></div>
+            <span class="route-arrow">→</span>
+            <div><span>Destination</span><strong>{{ alert.destination_ip or '—' }}</strong><small>Port {{ alert.destination_port if alert.destination_port is not none else '—' }}</small></div>
+        </div>
+        <dl class="metadata-list compact-list">
+            <div><dt>Protocol</dt><dd>{{ alert.protocol or '—' }}</dd></div>
+            <div><dt>Flow duration</dt><dd>{{ alert.flow_duration if alert.flow_duration is not none else '—' }}</dd></div>
+        </dl>
+    </section>
+</div>
+
+<section class="panel flow-panel">
+    <div class="panel-header"><div><p class="eyebrow">Original payload</p><h2>Complete flow data</h2></div><span class="code-label">JSON</span></div>
+    <pre>{{ alert.flow | pretty_json }}</pre>
+</section>
+{% endblock %}

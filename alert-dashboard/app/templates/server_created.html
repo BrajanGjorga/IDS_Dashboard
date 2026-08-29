@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Server connected · Aegis{% endblock %}
+{% block content %}
+<section class="token-layout">
+    <div class="success-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.1V12a8 8 0 1 1-4.7-7.3"/><path d="m20 4-9 9-3-3"/></svg></div>
+    <p class="eyebrow">Server registered</p>
+    <h1>{{ server.server_name }}</h1>
+    <p class="token-lead">Your server is ready to connect. Add the token below to the monitored machine.</p>
+
+    <div class="token-card">
+        <div class="token-warning" role="alert"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4m0 4h.01M10.3 4.6 2.8 17.5A1.7 1.7 0 0 0 4.3 20h15.4a1.7 1.7 0 0 0 1.5-2.5L13.7 4.6a2 2 0 0 0-3.4 0Z"/></svg><div><strong>Save this token now</strong><span>For security, it is shown once and cannot be recovered later.</span></div></div>
+        <label class="token-label">Environment configuration</label>
+        <pre class="token-value">PREDICTION_AGENT_API_TOKEN={{ api_token }}</pre>
+        <p class="token-help">Set this environment variable before starting the prediction agent. The existing alert endpoint and payload remain unchanged.</p>
+    </div>
+    <a class="button primary large token-done" href="/servers">I’ve saved the token <span aria-hidden="true">→</span></a>
+</section>
+{% endblock %}

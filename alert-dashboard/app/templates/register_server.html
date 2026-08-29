@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Register server · Aegis{% endblock %}
+{% block content %}
+<nav class="breadcrumb" aria-label="Breadcrumb"><a href="/servers">Servers</a><span>›</span><span>Register</span></nav>
+<section class="setup-layout">
+    <div class="setup-copy">
+        <span class="setup-step">Step 1 of 2</span>
+        <p class="eyebrow">Connect infrastructure</p>
+        <h1>Register a server</h1>
+        <p>Name the machine you want to monitor. We’ll generate a private API token for your prediction agent.</p>
+        <div class="setup-note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg><div><strong>Secure by design</strong><span>Only a one-way hash of the token is stored in the dashboard.</span></div></div>
+    </div>
+    <div class="setup-card">
+        <div class="setup-card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm0 9h14a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2Z"/></svg></div>
+        <h2>Server details</h2><p>Choose a clear name you’ll recognize in the alert feed.</p>
+        {% if error %}<div class="form-error" role="alert"><strong>Could not register server</strong><span>{{ error }}</span></div>{% endif %}
+        <form class="stacked-form" method="post" action="/servers/register">
+            <label>Server name<input type="text" name="server_name" value="{{ server_name }}" maxlength="255" placeholder="production-web-01" required><small>For example: gateway-eu-01 or finance-database.</small></label>
+            <button class="button primary large" type="submit">Generate API token <span aria-hidden="true">→</span></button>
+        </form>
+    </div>
+</section>
+{% endblock %}

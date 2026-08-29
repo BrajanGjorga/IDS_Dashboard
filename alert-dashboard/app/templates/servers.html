@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Monitored servers · Aegis{% endblock %}
+{% block content %}
+<section class="page-heading">
+    <div>
+        <div class="heading-kicker">Infrastructure</div>
+        <h1>Monitored servers</h1>
+        <p>Manage the endpoints authorized to report detections to your account.</p>
+    </div>
+    <a class="button primary" href="/servers/register"><span aria-hidden="true">＋</span> Register server</a>
+</section>
+
+{% if servers %}
+<section class="server-grid">
+    {% for server in servers %}
+    <article class="server-card {% if not server.active %}disabled{% endif %}">
+        <div class="server-card-top">
+            <span class="server-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm0 9h14a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2Z"/><path d="M7 7.5h.01M7 16.5h.01"/></svg></span>
+            {% if server.active %}<span class="badge safe"><i></i>Active</span>{% else %}<span class="status acknowledged">Disabled</span>{% endif %}
+        </div>
+        <h2>{{ server.server_name }}</h2>
+        <dl class="server-meta">
+            <div><dt>Registered</dt><dd>{{ server.created_at.strftime('%d %b %Y') }}</dd></div>
+            <div><dt>Last signal</dt><dd>{{ server.last_seen_at.strftime('%d %b, %H:%M') if server.last_seen_at else 'Waiting for data' }}</dd></div>
+        </dl>
+        <div class="server-card-actions">
+            <a class="button secondary" href="/servers/{{ server.id }}/alerts">View alerts <span aria-hidden="true">→</span></a>
+            {% if server.active %}<form method="post" action="/servers/{{ server.id }}/disable"><button class="button ghost danger-text" type="submit">Disable</button></form>{% endif %}
+        </div>
+    </article>
+    {% endfor %}
+    <a class="server-add-card" href="/servers/register"><span>＋</span><strong>Add another server</strong><small>Generate a new API token</small></a>
+</section>
+{% else %}
+<section class="panel onboarding-empty">
+    <span class="empty-icon large"><svg viewBox="0 0 24 24"><path d="M5 4h14a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm0 9h14a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2Z"/></svg></span>
+    <h2>No servers registered</h2><p>Register your first server to generate an API token and begin receiving alerts.</p>
+    <a class="button primary" href="/servers/register">Register your first server</a>
+</section>
+{% endif %}
+{% endblock %}

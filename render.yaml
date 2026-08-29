@@ -1,0 +1,35 @@
+# Render Blueprint for the Aegis IDS Dashboard.
+# Render reads this file from the repository root. Application commands run
+# from alert-dashboard/ through the rootDir setting below.
+
+services:
+  - type: web
+    name: aegis-ids-dashboard
+    runtime: python
+    region: frankfurt
+    plan: free
+    rootDir: alert-dashboard
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    maxShutdownDelaySeconds: 30
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: aegis-ids-database
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: SESSION_HTTPS_ONLY
+        value: "true"
+      - key: LOG_LEVEL
+        value: INFO
+
+databases:
+  - name: aegis-ids-database
+    databaseName: aegis_ids
+    user: aegis_ids_user
+    region: frankfurt
+    plan: free
+    ipAllowList: []

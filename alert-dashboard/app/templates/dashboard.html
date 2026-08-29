@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Security overview · Aegis{% endblock %}
+{% block content %}
+<section class="page-heading">
+    <div>
+        <div class="heading-kicker"><span class="live-dot"></span>Live monitoring</div>
+        <h1>{{ selected_server.server_name if selected_server else 'Security overview' }}</h1>
+        <p>{% if selected_server %}Focused activity from this monitored server.{% else %}Review and respond to activity across your monitored infrastructure.{% endif %}</p>
+    </div>
+    <div class="heading-actions">
+        <a class="button secondary" href="/servers">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm0 9h14a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2Z"/></svg>
+            Manage servers
+        </a>
+        <a class="button primary" href="/servers/register"><span aria-hidden="true">＋</span> Add server</a>
+    </div>
+</section>
+
+<section class="summary-grid" aria-label="Alert summary">
+    <article class="summary-card blue">
+        <div class="summary-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4m0 4h.01M10.3 4.6 2.8 17.5A1.7 1.7 0 0 0 4.3 20h15.4a1.7 1.7 0 0 0 1.5-2.5L13.7 4.6a2 2 0 0 0-3.4 0Z"/></svg></div>
+        <div><span>Total alerts</span><strong>{{ summary.total }}</strong><small>All recorded detections</small></div>
+    </article>
+    <article class="summary-card red">
+        <div class="summary-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="M12 8v4m0 4h.01"/></svg></div>
+        <div><span>Malicious</span><strong>{{ summary.malicious }}</strong><small>Flagged for investigation</small></div>
+    </article>
+    <article class="summary-card amber">
+        <div class="summary-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+        <div><span>Last 24 hours</span><strong>{{ summary.last_24_hours }}</strong><small>Recently received</small></div>
+    </article>
+    <article class="summary-card green">
+        <div class="summary-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm0 9h14a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2Z"/><path d="M7 7.5h.01M7 16.5h.01"/></svg></div>
+        <div><span>Monitored servers</span><strong>{{ summary.servers }}</strong><small>Reporting endpoints</small></div>
+    </article>
+</section>
+
+<section class="panel alerts-panel">
+    <div class="panel-header">
+        <div>
+            <p class="eyebrow">Detection feed</p>
+            <h2>Recent alerts</h2>
+        </div>
+        <span class="result-count">{{ pagination.total }} matching</span>
+    </div>
+
+    <form class="filters" method="get" action="/">
+        <label>Server
+            <select name="server_id">
+                <option value="">All servers</option>
+                {% for server in servers %}<option value="{{ server.id }}" {% if filters.server_id == server.id %}selected{% endif %}>{{ server.server_name }}</option>{% endfor %}
+            </select>
+        </label>
+        <label>Prediction
+            <select name="prediction">
+                <option value="">All predictions</option>
+                {% for item in predictions %}<option value="{{ item }}" {% if filters.prediction == item %}selected{% endif %}>{{ item }}</option>{% endfor %}
+            </select>
+        </label>
+        <label>Status
+            <select name="acknowledged">
+                <option value="">Any status</option>
+                <option value="false" {% if filters.acknowledged == "false" %}selected{% endif %}>Needs review</option>
+                <option value="true" {% if filters.acknowledged == "true" %}selected{% endif %}>Acknowledged</option>
+            </select>
+        </label>
+        <label>From<input type="datetime-local" name="start" value="{{ filters.start }}"></label>
+        <label>To<input type="datetime-local" name="end" value="{{ filters.end }}"></label>
+        <div class="filter-actions">
+            <button class="button primary" type="submit">Apply</button>
+            <a class="button ghost" href="/">Reset</a>
+        </div>
+    </form>
+
+    <div class="table-wrap">
+        <table class="alerts-table">
+            <thead><tr><th>Event</th><th>Server</th><th>Detection</th><th>Confidence</th><th>Source</th><th>Destination</th><th>Protocol</th><th>Status</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+            <tbody>
+                {% for alert in alerts %}
+                <tr class="{% if is_malicious(alert) %}malicious-row{% endif %}">
+                    <td class="nowrap"><a class="event-link" href="/alerts/{{ alert.id }}"><strong>{{ alert.timestamp.strftime('%H:%M:%S') }}</strong><small>{{ alert.timestamp.strftime('%d %b %Y') }}</small></a></td>
+                    <td><span class="server-name"><i></i>{{ alert.server_name or 'Unknown' }}</span></td>
+                    <td><span class="badge {% if is_malicious(alert) %}danger{% else %}safe{% endif %}"><i></i>{{ alert.prediction or alert.predicted_label or 'Unknown' }}</span></td>
+                    <td>{% if alert.confidence is not none %}<span class="confidence">{{ '%.1f'|format(alert.confidence * 100) }}%</span>{% else %}<span class="empty-value">—</span>{% endif %}</td>
+                    <td class="network-value">{{ alert.source_ip or '—' }}{% if alert.source_port is not none %}<small>:{{ alert.source_port }}</small>{% endif %}</td>
+                    <td class="network-value">{{ alert.destination_ip or '—' }}{% if alert.destination_port is not none %}<small>:{{ alert.destination_port }}</small>{% endif %}</td>
+                    <td><span class="protocol">{{ alert.protocol or '—' }}</span></td>
+                    <td>{% if alert.acknowledged %}<span class="status acknowledged">Acknowledged</span>{% else %}<span class="status new"><i></i>Needs review</span>{% endif %}</td>
+                    <td class="row-action">
+                        {% if not alert.acknowledged %}<form method="post" action="/alerts/{{ alert.id }}/acknowledge?return_to=dashboard"><button class="icon-button small" type="submit" title="Acknowledge alert" aria-label="Acknowledge alert"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></button></form>
+                        {% else %}<a class="icon-button small" href="/alerts/{{ alert.id }}" title="View alert" aria-label="View alert"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></a>{% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td class="empty-state" colspan="9"><span class="empty-icon"><svg viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.3 4.6 2.8 17.5A1.7 1.7 0 0 0 4.3 20h15.4a1.7 1.7 0 0 0 1.5-2.5L13.7 4.6a2 2 0 0 0-3.4 0Z"/></svg></span><strong>No alerts found</strong><small>Try adjusting the filters or wait for a server to report.</small></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if pagination.page_count > 1 %}<nav class="pagination" aria-label="Alert pages">
+        {% if pagination.page > 1 %}<a class="button secondary" href="{{ request.url.include_query_params(page=pagination.page - 1) }}">← Previous</a>{% endif %}
+        <span>Page <strong>{{ pagination.page }}</strong> of {{ pagination.page_count }}</span>
+        {% if pagination.page < pagination.page_count %}<a class="button secondary" href="{{ request.url.include_query_params(page=pagination.page + 1) }}">Next →</a>{% endif %}
+    </nav>{% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0b1220">
+    <title>{% block title %}Aegis IDS{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
+</head>
+<body>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="/" aria-label="Aegis IDS dashboard">
+                <span class="brand-symbol" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 2 4.5 5.2v5.6c0 4.7 3.2 9 7.5 10.2 4.3-1.2 7.5-5.5 7.5-10.2V5.2L12 2Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg>
+                </span>
+                <span class="brand-copy"><strong>Aegis</strong><small>IDS Console</small></span>
+            </a>
+
+            {% if current_user %}
+            <nav class="primary-nav" aria-label="Primary navigation">
+                <a href="/" {% if request.url.path == '/' or request.url.path.startswith('/alerts/') %}class="active" aria-current="page"{% endif %}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4v9Zm0 7h6v-4H4v4Zm10 0h6v-9h-6v9Zm0-16v4h6V4h-6Z"/></svg>
+                    <span>Alerts</span>
+                </a>
+                <a href="/servers" {% if request.url.path.startswith('/servers') %}class="active" aria-current="page"{% endif %}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm0 9h14a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2Z"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>
+                    <span>Servers</span>
+                </a>
+            </nav>
+
+            <div class="account-area">
+                <a class="health-status" href="/health" title="View system health"><span></span>Operational</a>
+                <div class="user-chip" title="Signed in as {{ current_user.username }}">
+                    <span class="avatar">{{ current_user.username[:1] | upper }}</span>
+                    <span class="user-copy"><small>Signed in as</small><strong>{{ current_user.username }}</strong></span>
+                </div>
+                <form method="post" action="/logout">
+                    <button class="icon-button" type="submit" title="Log out" aria-label="Log out">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+                    </button>
+                </form>
+            </div>
+            {% else %}
+            <nav class="guest-nav" aria-label="Account navigation">
+                <a href="/login">Log in</a>
+                <a class="button primary compact" href="/register">Create account</a>
+            </nav>
+            {% endif %}
+        </div>
+    </header>
+
+    <main class="page-shell">{% block content %}{% endblock %}</main>
+    <footer class="site-footer"><span>Aegis IDS Console</span><span>All timestamps are shown in UTC</span></footer>
+</body>
+</html>
